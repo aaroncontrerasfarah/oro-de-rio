@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="es-CL"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Oro de río</title><meta name="theme-color" content="#12312f">
+<meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icono.svg"><link rel="apple-touch-icon" href="icono.png">
+<link rel="stylesheet" href="vendor/leaflet.css"><link rel="stylesheet" href="estilo.css"></head>
+<body>
+<main>
+<section id="camara" class="vista activa" aria-label="Cámara">
+  <div id="escena"><div id="marco"><video id="video" playsinline muted autoplay></video><canvas id="foto"></canvas><canvas id="capa"></canvas><div id="marcas"></div></div>
+    <div id="inicio"><h1>Apunta al río y mira dónde puede quedar el oro</h1>
+      <p>La app reconoce agua, roca y grava, y marca los puntos donde la corriente suelta lo pesado. El oro en sí no se ve por cámara: confírmalo con batea o detector.</p>
+      <button id="abrir" class="principal">Abrir cámara</button><button id="elegir" class="claro">Usar una foto</button></div>
+    <p id="estado" role="status"></p>
+    <button id="rumbo" aria-label="Sentido de la corriente. Toca para girar 45 grados"><svg viewBox="0 0 48 48" width="34" aria-hidden="true"><path d="M6 24h30M26 13l11 11-11 11" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Corriente</span></button>
+  </div>
+  <div id="mandos" hidden><button id="otra" class="claro">Foto</button><button id="disparo" class="principal">Congelar</button><button id="medir" class="claro">Medir corriente</button></div>
+  <div id="resultado"></div>
+  <input id="archivo" type="file" accept="image/*" hidden>
+</section>
+<section id="mapa" class="vista" aria-label="Mapa"><div id="lienzo"></div>
+  <div class="barra"><button id="gps" class="claro">Mi ubicación</button><button id="analizar" class="principal">Buscar trampas aquí</button>
+  <label>Ir a zona <select id="zonas"><option value="">Elegir</option></select></label></div><div id="infomapa"></div></section>
+<section id="guia" class="vista texto" aria-label="Guía"></section>
+<section id="diario" class="vista texto" aria-label="Bitácora"></section>
+</main>
+<nav><button data-v="camara" aria-current="page">Cámara</button><button data-v="mapa">Mapa</button><button data-v="guia">Guía</button><button data-v="diario">Bitácora</button></nav>
+<script src="vendor/leaflet.js"></script><script type="module" src="js/app.js"></script>
+</body></html>

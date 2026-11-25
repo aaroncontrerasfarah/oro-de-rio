@@ -1,0 +1,34 @@
+@font-face{font-family:F;src:url(vendor/fuente.woff2);font-weight:400 700}
+:root{--rio:#12312f;--rio2:#1f4b47;--piedra:#dbe4e2;--agua:#f3f7f6;--tinta:#0e2422;--oro:#ffc526;--sonda:#63e0ff}
+*{box-sizing:border-box}html,body{height:100%;margin:0}
+body{font:400 17px/1.45 F,system-ui,sans-serif;background:var(--agua);color:var(--tinta);display:flex;flex-direction:column;overflow:hidden;height:100dvh}
+main{flex:1;min-height:0;position:relative}
+.vista{position:absolute;inset:0;display:none;flex-direction:column}.vista.activa{display:flex}
+button,select,input,textarea{font:inherit;color:inherit}
+button{border:0;border-radius:10px;padding:0 18px;min-height:50px;font-weight:600;cursor:pointer}
+:focus-visible{outline:3px solid var(--oro);outline-offset:2px}
+.principal{background:var(--oro);color:var(--tinta)}.claro{background:var(--piedra);color:var(--tinta)}button:disabled{opacity:.5}
+nav{display:flex;background:var(--rio);padding-bottom:env(safe-area-inset-bottom)}
+nav button{flex:1;background:none;color:#c9dad7;border-radius:0;padding:0 4px;border-top:4px solid transparent}
+nav button[aria-current]{color:#fff;border-color:var(--oro)}
+#camara{background:var(--rio);color:#fff}
+#escena{flex:1;min-height:0;position:relative;display:grid;place-items:center;overflow:hidden;touch-action:none}
+#marco{position:absolute;overflow:hidden}#marco>*{position:absolute;inset:0;width:100%;height:100%}#video{object-fit:cover}#marcas{pointer-events:none}
+.marca{position:absolute;pointer-events:auto;transform:translate(-50%,-50%);min-height:44px;width:44px;padding:0;border-radius:50%;background:var(--oro);color:var(--tinta);font-size:21px;font-weight:700;border:3px solid var(--rio)}
+.marca.detector{background:var(--sonda);border-radius:12px}.marca[aria-pressed=true]{border-color:#fff;transform:translate(-50%,-50%) scale(1.15)}
+#inicio{position:relative;padding:24px;max-width:560px;width:100%}h1{font-size:clamp(34px,8vw,52px);line-height:1.05;letter-spacing:-.02em;margin:0 0 16px;text-wrap:balance}
+#inicio p{max-width:46ch;margin:0 0 24px;color:#d5e3e0}#inicio button{margin:0 10px 10px 0}
+#estado{position:absolute;left:10px;top:10px;margin:0;padding:6px 12px;background:#0e2422e0;border-radius:8px;max-width:calc(100% - 110px);font-size:15px}#estado:empty{display:none}
+#rumbo{position:absolute;right:10px;top:10px;width:82px;min-height:74px;padding:4px;background:#0e2422e0;color:#fff;font-size:14px;display:none;flex-direction:column;align-items:center;justify-content:center}
+.activo #rumbo{display:flex}.activo #inicio{display:none}#rumbo.pendiente{background:var(--oro);color:var(--tinta)}
+#mandos{display:flex;gap:8px;padding:10px}#mandos[hidden]{display:none}#mandos button{flex:1;padding:0 6px;line-height:1.15}
+#resultado{background:var(--agua);color:var(--tinta);max-height:38%;overflow:auto}#resultado:empty{display:none}
+#resultado article{padding:12px 16px}#resultado h2,#infomapa h2{margin:0 0 4px;font-size:20px}#resultado p{margin:0 0 6px}
+#lienzo{flex:1;min-height:0;z-index:0}.barra{display:flex;flex-wrap:wrap;gap:8px;padding:10px;align-items:center}.barra select{min-height:50px;border-radius:10px;border:2px solid var(--piedra);background:#fff;max-width:190px}
+#infomapa{max-height:34%;overflow:auto;padding:0 16px}#infomapa:not(:empty){padding-bottom:12px}#infomapa p{margin:0 0 6px}
+.texto{overflow:auto;display:none}.texto.activa{display:block;padding:20px 16px 40px}.texto>*{max-width:68ch;margin-left:auto;margin-right:auto}
+.texto h1{font-size:34px}.texto h2{font-size:22px;margin:28px auto 6px}details{border-bottom:2px solid var(--piedra)}summary{font-weight:600;padding:14px 0;cursor:pointer}details>*:not(summary){margin-top:0}li{margin-bottom:6px}a{color:#0b5c6b}
+form{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}form label{display:grid;gap:4px;font-weight:600}form .ancho{grid-column:1/-1}
+input,textarea{min-height:48px;border:2px solid #a9bdb9;border-radius:10px;padding:8px 10px;background:#fff;width:100%;font-weight:400}
+.reg{align-items:flex-start;border-bottom:2px solid var(--piedra);padding:12px 0;display:flex;gap:12px;justify-content:space-between}.reg p{margin:0}
+@media(min-width:900px){#camara.activa{display:grid;grid-template:1fr auto/1fr 360px}#escena{grid-row:1/3}#resultado{max-height:none;grid-column:2}#resultado:empty{display:block;background:var(--rio2)}#mandos{grid-column:2;grid-row:2}#mandos[hidden]+#resultado{display:none}#camara:not(:has(#escena.activo)) #escena{grid-column:1/3}}

@@ -1,0 +1,33 @@
+// Coordenadas aproximadas de distritos con lavaderos históricos. Orientativas: no delimitan depósitos.
+export const ZONAS = [
+  { n: 'Andacollo (Coquimbo)', p: [-30.232, -71.084], d: 'Lavaderos coloniales; quebradas generalmente secas. El detector rinde más que la canaleta.' },
+  { n: 'Catapilco (Valparaíso)', p: [-32.567, -71.278], d: 'Placeres auríferos de la costa central.' },
+  { n: 'Tiltil (Metropolitana)', p: [-33.083, -70.927], d: 'Distrito aurífero con lavaderos históricos en quebradas.' },
+  { n: 'Marga Marga (Valparaíso)', p: [-33.09, -71.42], d: 'Primer gran lavadero de la Conquista. Placeres con clastos graníticos.' },
+  { n: 'Quilacoya (Biobío)', p: [-37.06, -72.87], d: 'Lavadero colonial junto al Biobío.' },
+  { n: 'Lonquimay (La Araucanía)', p: [-38.45, -71.37], d: 'Lavaderos en las nacientes del Biobío.' },
+  { n: 'Madre de Dios (Mariquina)', p: [-39.58, -72.9], d: 'Lavaderos desde la Colonia, en la cordillera de la Costa.' },
+  { n: 'Carelmapu (Los Lagos)', p: [-41.745, -73.705], d: 'Placeres costeros históricos.' },
+  { n: 'Cucao (Chiloé)', p: [-42.635, -74.12], d: 'Oro fino en arenas. Cerca hay un parque nacional: comprueba los límites.' },
+  { n: 'Río de las Minas (Punta Arenas)', p: [-53.14, -71.0], d: 'Lavado de oro desde el siglo XIX. Parte de la cuenca está protegida.' },
+  { n: 'Cordón Baquedano (Tierra del Fuego)', p: [-53.3, -70.07], d: 'Lavaderos activos en gravas glaciales. Hay faenas y concesiones vigentes.' },
+];
+const ley = n => `https://www.bcn.cl/leychile/navegar?idLey=${n}`;
+export const GUIA = `<h1>Guía de terreno</h1>
+<h2>Qué puede y qué no puede decirte la cámara</h2>
+<p>Reconoce agua, roca y grava, y aplica reglas de cómo el río deposita minerales pesados. No ve oro, ni bajo el agua, ni a qué profundidad está la roca madre. Una zona de prioridad alta en un río sin oro sigue sin tener oro. Elige primero la cuenca, después usa la cámara.</p>
+<h2>Orden de trabajo</h2>
+<ol><li><b>Mapa.</b> Busca cuencas con historia aurífera y comprueba concesiones.</li><li><b>Cámara.</b> Colócate donde veas 30 a 50 m de río. Desliza el dedo hacia donde corre el agua.</li><li><b>Tres bateas por zona.</b> Mismo volumen siempre, desde la parte más profunda que alcances.</li><li><b>Sigue el color.</b> Sube por el río mientras aumente; si desaparece, el aporte quedó entre las dos últimas pruebas.</li><li><b>Canaleta</b> donde tres bateas seguidas den color.</li></ol>
+<h2>Lavado</h2>
+<details><summary>Batea, paso a paso</summary><ol><li>Llena dos tercios y pasa por criba de unos 12 mm. Revisa las piedras de la criba.</li><li>Sumerge, deshaz la arcilla con los dedos y agita de lado a lado para que lo pesado baje.</li><li>Inclina hacia los rifles y deja que el agua se lleve lo liviano. Vuelve a agitar cada pocas pasadas.</li><li>Para cuando queden dos cucharadas de arena negra. Termina despacio, en una tina.</li><li>Aparta la magnetita con un imán dentro de una bolsa. Recoge el oro con pipeta.</li></ol></details>
+<details><summary>Canaleta</summary><p>Como punto de partida, dale unos 2,5 cm de caída por cada 30 cm de largo. El agua debe mover la grava por los rifles sin dejarlos limpios ni taparlos. Alimenta poco a poco con material cribado. Lava la descarga en batea: si tiene oro, baja la pendiente o el ritmo. Limpia la alfombra antes de que se llene de arena negra.</p></details>
+<details><summary>¿Es oro?</summary><ul><li><b>Oro:</b> brilla igual a la sombra, se queda atrás en la batea y se aplasta sin romperse.</li><li><b>Mica:</b> flota y destella al girarla.</li><li><b>Pirita:</b> quebradiza, con caras planas; su raya es oscura.</li></ul></details>
+<h2>Detector VLF</h2>
+<details><summary>Dónde sirve en un río</summary><p>Grietas de roca madre, barras altas, terrazas y descartes de lavaderos antiguos. El oro de muchos ríos es polvo o laminillas que un VLF no marca: sin señal no significa sin oro. Comprueba siempre con batea.</p></details>
+<details><summary>Ajuste</summary><ol><li>Busca un punto sin metal y haz el balance de suelo subiendo y bajando el plato. Repítelo al cambiar de terreno.</li><li>Sube la sensibilidad hasta que se vuelva inestable y baja un poco.</li><li>Usa plato pequeño en grietas y todo metal si el equipo lo permite.</li><li>Prueba con un trocito de plomo conocido sobre ese mismo suelo.</li></ol></details>
+<details><summary>Barrido y señales</summary><p>Plato rozando el suelo, paralelo, lento, con media pasada de solape. Repite en cruz. Una señal corta que se mantiene en ambos sentidos se cava siempre. La que se estira o desaparece al levantar el plato suele ser suelo o piedra caliente. Saca también el plomo y la basura.</p></details>
+<details><summary>Mucha arena negra</summary><p>La magnetita tapa señales y da falsas. Baja la sensibilidad, rebalancea a menudo y levanta un poco el plato. Si sigue inestable, pasa a batea.</p></details>
+<h2>Seguridad</h2><ul><li>No entres si el agua pasa de la rodilla, corre fuerte, sube o se enturbia. Las centrales pueden soltar agua sin aviso.</li><li>No caves bajo taludes ni debajo de bloques.</li><li>Nunca uses mercurio. No laves con detergente en el río.</li><li>Ve acompañado y deja dicho dónde estás. Tapa los hoyos. Emergencias: 131, 132, 133; CONAF 130.</li></ul>
+<h2>Permisos en Chile</h2>
+<p>Orientación general, no asesoría legal. Confirma cada lugar antes de extraer.</p>
+<ul><li><b>Concesiones.</b> El oro, también el aluvial, se rige por el <a href="${ley(18248)}">Código de Minería</a> y la <a href="${ley(18097)}">Ley 18.097</a>. Si hay una concesión ajena, necesitas autorización de su titular. Consulta en <a href="https://www.sernageomin.cl">SERNAGEOMIN</a> o su <a href="https://www.chileatiende.gob.cl/fichas/2797-consulta-por-rol-individualizacion-y-ubicacion-de-concesiones-mineras">consulta por ubicación</a>.</li><li><b>Terreno.</b> Para entrar en un predio, pide permiso al dueño. El Código regula la facultad de catar y cavar y sus límites.</li><li><b>Áreas protegidas.</b> No trabajes en parques, reservas o santuarios sin permiso expreso.</li><li><b>Agua y cauce.</b> Motobombas, dragas o modificar el cauce pueden exigir permisos de la DGA, DOH, SERNAGEOMIN o evaluación ambiental.</li><li><b>Detector y patrimonio.</b> La <a href="${ley(17288)}">Ley 17.288</a> protege lo arqueológico: no prospectes sitios históricos. Si aparece un objeto antiguo, no lo muevas y avisa a Carabineros o al Consejo de Monumentos Nacionales.</li></ul>`;
