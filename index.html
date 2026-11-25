@@ -9,10 +9,13 @@
 <main>
 <section id="camara" class="vista activa" aria-label="Cámara">
   <div id="escena"><div id="marco"><video id="video" playsinline muted autoplay></video><canvas id="foto"></canvas><canvas id="capa"></canvas><div id="marcas"></div></div>
-    <div id="inicio"><h1>Apunta al río y mira dónde puede quedar el oro</h1>
-      <p>La app reconoce agua, roca y grava, y marca los puntos donde la corriente suelta lo pesado. El oro en sí no se ve por cámara: confírmalo con batea o detector.</p>
-      <button id="abrir" class="principal">Abrir cámara</button><button id="elegir" class="claro">Usar una foto</button></div>
+    <div id="inicio"><h1>Reconoce tu zona y busca con la cámara</h1>
+      <p>El GPS identifica el tipo de río, el relieve y la roca. Con eso, la cámara señala dónde conviene buscar. El oro en sí no se ve por cámara: confírmalo con batea o detector.</p>
+      <button id="reconocer" class="principal">Reconocer mi zona</button><button id="ejemplo" class="claro">Ver un ejemplo</button><br>
+      <button id="abrir" class="liso">Abrir cámara</button><button id="elegir" class="liso">Usar una foto</button></div>
+    <div id="perfil" hidden><div id="ficha" role="status"></div><div class="acciones"><button id="seguir" class="principal">Buscar con la cámara</button><button id="cerrar" class="claro">Volver</button></div></div>
     <p id="estado" role="status"></p>
+    <button id="chip" hidden></button>
     <button id="rumbo" aria-label="Sentido de la corriente. Toca para girar 45 grados"><svg viewBox="0 0 48 48" width="34" aria-hidden="true"><path d="M6 24h30M26 13l11 11-11 11" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Corriente</span></button>
   </div>
   <div id="mandos" hidden><button id="otra" class="claro">Foto</button><button id="disparo" class="principal">Congelar</button><button id="medir" class="claro">Medir corriente</button></div>

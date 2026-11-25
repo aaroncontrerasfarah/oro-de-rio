@@ -71,7 +71,7 @@ const X = i => i % N, Y = i => (i / N) | 0;
  * mat: materiales; flujo {x,y} dirección de la corriente en la imagen (hacia dónde va);
  * espuma: Float32Array opcional 0..1; velocidad: Float32Array opcional (relativa, NaN = sin dato)
  */
-export function detectarTrampas(mat, flujo, espuma, velocidad) {
+export function detectarTrampas(mat, flujo, espuma, velocidad, pesos = {}) {
   const l = Math.hypot(flujo.x, flujo.y) || 1, f = { x: flujo.x / l, y: flujo.y / l };
   const p = i => X(i) * f.x + Y(i) * f.y;
   const agua = componentes(mat, AGUA).filter(c => c.celdas.length >= 120);
@@ -82,7 +82,7 @@ export function detectarTrampas(mat, flujo, espuma, velocidad) {
   const zonas = [];
   const pon = (tipo, x, y, r, factor = 1) => {
     if (x < 1 || y < 1 || x > N - 2 || y > N - 2) return;
-    zonas.push({ tipo, x: x / N, y: y / N, r: Math.min(.12, Math.max(.025, r / N)), puntaje: TIPOS[tipo].base * factor });
+    zonas.push({ tipo, x: x / N, y: y / N, r: Math.min(.12, Math.max(.025, r / N)), puntaje: TIPOS[tipo].base * factor * (pesos[tipo] ?? 1) });
   };
 
   // Islas no-agua rodeadas por agua = bloques (el modelo a veces no las llama "rock")

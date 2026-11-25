@@ -1,8 +1,9 @@
 import { N, AGUA, ROCA, SEDIMENTO, TIPOS, detectarTrampas, medirCorriente, resumirCorriente } from './trampas.js';
+import * as gps from './gps.js'; import { FORMAS, corrienteEnPantalla, rumboCamara } from './zona.js';
 import { abrirRegistro } from './diario.js';
 const $ = id => document.getElementById(id);
 const escena = $('escena'), marco = $('marco'), video = $('video'), foto = $('foto'), capa = $('capa'), marcas = $('marcas');
-let w, pend = new Map(), sec = 0, listo = false, modo = null, flujo = { x: 1, y: 0 }, flujoDado = false, vel = null, ult = null, zonas = [], sel = 0, imagen = null, turno = 0, midiendo = false, pincel = null;
+let w, pend = new Map(), sec = 0, listo = false, modo = null, flujo = { x: 1, y: 0 }, flujoDado = false, vel = null, ult = null, zonas = [], sel = 0, imagen = null, turno = 0, midiendo = false, pincel = null, manual = false, demo = false, conBrujula = false;
 const decir = t => $('estado').textContent = t || '';
 
 function obrero() {
@@ -47,8 +48,8 @@ function recalcular() {
   if (!ult) return;
   // La dirección está en píxeles de pantalla; la rejilla está estirada
   const f = { x: flujo.x / (marco.clientWidth || 1), y: flujo.y / (marco.clientHeight || 1) };
-  const r = detectarTrampas(ult.mat, f, ult.espuma, vel); zonas = r.zonas.filter((z, i, a) => !a.slice(0, i).some(q => Math.hypot((q.x - z.x) * marco.clientWidth, (q.y - z.y) * marco.clientHeight) < 48)); sel = Math.min(sel, Math.max(0, zonas.length - 1));
-  decir(r.agua < .02 ? 'No veo agua. Encuadra el cauce y sus orillas.' : !zonas.length ? 'Veo agua, pero ninguna trampa clara. Busca rocas, barras de grava o una curva.' : !flujoDado ? 'Desliza el dedo sobre el agua hacia donde corre.' : `${zonas.length} ${zonas.length === 1 ? 'zona' : 'zonas'} para probar`);
+  const r = detectarTrampas(ult.mat, f, ult.espuma, vel, gps.zona?.pesos); zonas = r.zonas.filter((z, i, a) => !a.slice(0, i).some(q => Math.hypot((q.x - z.x) * marco.clientWidth, (q.y - z.y) * marco.clientHeight) < 48)); sel = Math.min(sel, Math.max(0, zonas.length - 1));
+  decir(r.agua < .02 ? 'No veo agua. Encuadra el cauce y sus orillas.' : !zonas.length ? 'Veo agua, pero ninguna trampa clara. Busca rocas, barras de grava o una curva.' : !flujoDado ? 'Desliza el dedo sobre el agua hacia donde corre.' : `${zonas.length} ${zonas.length === 1 ? 'lugar' : 'lugares'} para probar${conBrujula ? '. Corriente según brújula: si no coincide, deslízala.' : ''}`);
   pintar();
 }
 function pintar() {
@@ -75,16 +76,18 @@ function pintar() {
     R.innerHTML = `<article><h2>${sel + 1}. ${T.nombre}</h2><p><b>Prioridad ${z.nivel}.</b> ${T.porque}</p><p>${T.hacer}</p><p>Empieza con: <b>${T.util === 'detector' ? 'detector VLF, luego batea' : 'batea, luego canaleta'}</b>${flujoDado ? '' : '. Indica la corriente para afinar.'}</p></article>`;
     const b = document.createElement('button'); b.className = 'claro'; b.textContent = 'Anotar en bitácora'; b.onclick = () => abrirRegistro(T.nombre); R.firstChild.append(b);
   }
+  const F = FORMAS[gps.zona?.forma]; $('chip').hidden = !modo || !gps.zona; $('chip').textContent = F ? `Ajustado a: ${F.nombre.toLowerCase()}` : 'Ver mi zona';
   const a = Math.atan2(flujo.y, flujo.x) * 180 / Math.PI; $('rumbo').firstElementChild.style.transform = `rotate(${a}deg)`; $('rumbo').classList.toggle('pendiente', !flujoDado);
 }
 function activar(m) {
-  modo = m; turno++; ult = null; zonas = []; vel = null; sel = 0; flujoDado = false; flujo = { x: 1, y: 0 };
-  escena.classList.add('activo'); $('mandos').hidden = false; video.hidden = m !== 'video'; video.style.display = m === 'video' ? '' : 'none'; foto.style.display = m === 'video' ? 'none' : '';
+  modo = m; turno++; ult = null; zonas = []; vel = null; sel = 0; flujoDado = false; manual = false; conBrujula = false; flujo = { x: 1, y: 0 };
+  escena.classList.add('activo'); $('perfil').hidden = true; $('mandos').hidden = false; video.hidden = m !== 'video'; video.style.display = m === 'video' ? '' : 'none'; foto.style.display = m === 'video' ? 'none' : '';
   $('disparo').textContent = m === 'video' ? 'Congelar' : 'Cámara'; pincel = null; $('medir').textContent = m === 'video' ? 'Medir corriente' : 'Corregir'; encajar();
 }
 function parar() { video.srcObject?.getTracks().forEach(t => t.stop()); video.srcObject = null; }
 
 export async function abrir() {
+  demo = false; pedirBrujula();
   if (!navigator.mediaDevices?.getUserMedia) return decir('La cámara en vivo necesita https. Puedes usar una foto.');
   try {
     const s = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } } });
@@ -101,7 +104,7 @@ async function bucle() {
 }
 function congelar() {
   const c = lienzo(Math.max(1, marco.clientWidth * 2), Math.max(1, marco.clientHeight * 2)); copiar(c, c.canvas.width, c.canvas.height);
-  const f = flujo, fd = flujoDado, v = vel; imagen = c.canvas; parar(); activar('foto'); flujo = f; flujoDado = fd; vel = v; analizar().catch(() => decir('Falló el análisis. Vuelve a intentarlo.'));
+  const f = flujo, fd = flujoDado, v = vel, mn = manual, cb = conBrujula; imagen = c.canvas; parar(); activar('foto'); flujo = f; flujoDado = fd; vel = v; manual = mn; conBrujula = cb; analizar().catch(() => decir('Falló el análisis. Vuelve a intentarlo.'));
 }
 export async function usarFoto(blob) {
   try {
@@ -117,18 +120,43 @@ async function medir() {
   while (performance.now() < fin && t === turno && modo === 'video') { await new Promise(r => setTimeout(r, 80)); const b = gris(); muestras.push(...medirCorriente(a, b, W, H, ult.mat)); a = b; }
   midiendo = false; if (t !== turno) return;
   const r = resumirCorriente(muestras);
-  if (r?.fiable) { const x = r.x * marco.clientWidth, y = r.y * marco.clientHeight, l = Math.hypot(x, y); flujo = { x: x / l, y: y / l }; flujoDado = true; vel = r.velocidad; recalcular(); }
+  if (r?.fiable) { const x = r.x * marco.clientWidth, y = r.y * marco.clientHeight, l = Math.hypot(x, y); flujo = { x: x / l, y: y / l }; flujoDado = true; manual = true; conBrujula = false; vel = r.velocidad; recalcular(); }
   else decir('No pude medir la corriente. Apoya el teléfono, o desliza el dedo hacia donde corre.');
 }
+let oyendo = false;
+function pedirBrujula() {
+  const D = window.DeviceOrientationEvent; if (!D || oyendo) return;
+  const oir = () => { oyendo = true; for (const t of ['deviceorientationabsolute', 'deviceorientation']) addEventListener(t, girar); };
+  oir(); D.requestPermission?.().catch(() => { });
+}
+let tGiro = 0;
+function girar(e) {
+  const z = gps.zona, r = z?.rio; if (modo !== 'video' || manual || midiendo || !r || z.guardada > 150 || r.distancia > 150 || e.timeStamp - tGiro < 300) return;
+  const c = e.webkitCompassHeading ?? (e.absolute && e.alpha != null ? rumboCamara(e.alpha, e.beta, e.gamma) : null); if (c == null) return;
+  tGiro = e.timeStamp; const n = corrienteEnPantalla(r.rumbo, c);
+  if (flujoDado && n.x * flujo.x + n.y * flujo.y > .97) return;
+  flujo = n; flujoDado = true; conBrujula = true; recalcular(); pintar();
+}
+async function reconocerZona(pos) {
+  $('perfil').hidden = false; $('seguir').hidden = true; $('ficha').innerHTML = '<h2>Reconociendo tu zona…</h2><p>Leyendo GPS, ríos, relieve y roca. Tarda unos segundos.</p>';
+  let g; try { g = pos ? { pos } : await gps.ubicar(); } catch (e) { gps.usar(null); $('ficha').innerHTML = `<h2>Sin ubicación</h2><p>${e.code === 1 ? 'Permite la ubicación en los ajustes del navegador y vuelve a intentarlo.' : 'El GPS no responde. Sal a cielo abierto y vuelve a intentarlo.'} La cámara funciona igual, con reglas generales.</p>`; $('seguir').hidden = false; return; }
+  let z = null; try { z = await gps.reconocer(g.pos); } catch (e) { console.warn(e); gps.usar(null); }
+  $('ficha').innerHTML = (demo ? '<p class="nota">Ejemplo con datos reales del río Naranjo, Lonquimay. La foto que verás después es de otro río.</p>' : '') + gps.tarjeta(z) + (g.error > 100 ? `<p>GPS poco preciso (±${Math.round(g.error)} m): confirma que es tu río.</p>` : ''); $('seguir').hidden = false;
+}
 export function iniciar() {
+  $('reconocer').onclick = () => { demo = false; pedirBrujula(); reconocerZona(); };
+  $('ejemplo').onclick = () => { demo = true; reconocerZona([-38.45565, -71.3568]); };
+  $('cerrar').onclick = () => { $('perfil').hidden = true; if (!modo) { demo = false; gps.usar(null); } };
+  $('seguir').onclick = async () => { $('perfil').hidden = true; if (modo) return; if (!demo) return abrir(); await usarFoto(await (await fetch('ejemplo.jpg')).blob()); flujo = { x: 0, y: 1 }; flujoDado = manual = true; recalcular(); };
+  $('chip').onclick = () => { $('ficha').innerHTML = gps.tarjeta(gps.zona); $('seguir').hidden = false; $('perfil').hidden = false; };
   $('abrir').onclick = abrir; $('elegir').onclick = $('otra').onclick = () => $('archivo').click();
   $('archivo').onchange = e => { const f = e.target.files[0]; e.target.value = ''; if (f) usarFoto(f); };
-  $('disparo').onclick = () => modo === 'video' ? congelar() : abrir(); $('medir').onclick = () => { if (modo === 'video') return medir(); pincel = pincel == null ? AGUA : pincel === AGUA ? ROCA : pincel === ROCA ? SEDIMENTO : null; $('medir').textContent = { [AGUA]: 'Pintando agua', [ROCA]: 'Pintando roca', [SEDIMENTO]: 'Pintando grava' }[pincel] || 'Corregir'; if (pincel != null) decir('Pinta con el dedo lo que no reconoció. Toca el botón para cambiar de material.'); else recalcular(); };
-  $('rumbo').onclick = () => { const a = Math.round(Math.atan2(flujo.y, flujo.x) / (Math.PI / 4)) * Math.PI / 4 + Math.PI / 4; flujo = { x: Math.cos(a), y: Math.sin(a) }; flujoDado = true; vel = null; recalcular(); pintar(); };
+  $('disparo').onclick = () => { if (modo === 'video') return congelar(); if (demo) gps.usar(null); abrir(); }; $('medir').onclick = () => { if (modo === 'video') return medir(); pincel = pincel == null ? AGUA : pincel === AGUA ? ROCA : pincel === ROCA ? SEDIMENTO : null; $('medir').textContent = { [AGUA]: 'Pintando agua', [ROCA]: 'Pintando roca', [SEDIMENTO]: 'Pintando grava' }[pincel] || 'Corregir'; if (pincel != null) decir('Pinta con el dedo lo que no reconoció. Toca el botón para cambiar de material.'); else recalcular(); };
+  $('rumbo').onclick = () => { const a = Math.round(Math.atan2(flujo.y, flujo.x) / (Math.PI / 4)) * Math.PI / 4 + Math.PI / 4; flujo = { x: Math.cos(a), y: Math.sin(a) }; flujoDado = true; manual = true; conBrujula = false; vel = null; recalcular(); pintar(); };
   const pintarDedo = e => { if (!ult || modo !== 'foto') return; const b = marco.getBoundingClientRect(), gx = (e.clientX - b.left) / b.width * N, gy = (e.clientY - b.top) / b.height * N, R = N * 18 / b.width, S = N * 18 / b.height; for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) if (((x - gx) / R) ** 2 + ((y - gy) / S) ** 2 <= 1) ult.mat[y * N + x] = pincel; pintar(); };
   escena.addEventListener('pointerdown', e => { if (pincel == null || e.target.closest('button')) return; e.stopImmediatePropagation(); pintarDedo(e); const mv = q => pintarDedo(q), up = () => { removeEventListener('pointermove', mv); removeEventListener('pointerup', up); removeEventListener('pointercancel', up); recalcular(); }; addEventListener('pointermove', mv); addEventListener('pointerup', up); addEventListener('pointercancel', up); });
-  let p = null; addEventListener('pointercancel', () => p = null); escena.addEventListener('pointerdown', e => p = e.target.closest('button') ? null : [e.clientX, e.clientY]);
-  addEventListener('pointerup', e => { if (!p || !modo) return; const x = e.clientX - p[0], y = e.clientY - p[1], l = Math.hypot(x, y); p = null; if (l < 40) return; flujo = { x: x / l, y: y / l }; flujoDado = true; vel = null; recalcular(); pintar(); });
+  let p = null; addEventListener('pointercancel', () => p = null); escena.addEventListener('pointerdown', e => p = e.target.closest('button,#perfil') ? null : [e.clientX, e.clientY]);
+  addEventListener('pointerup', e => { if (!p || !modo) return; const x = e.clientX - p[0], y = e.clientY - p[1], l = Math.hypot(x, y); p = null; if (l < 40) return; flujo = { x: x / l, y: y / l }; flujoDado = true; manual = true; conBrujula = false; vel = null; recalcular(); pintar(); });
   // Depuración y pruebas: window.usarFoto(blob)
   window.usarFoto = usarFoto;
 }
