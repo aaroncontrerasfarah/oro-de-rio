@@ -2,3 +2,5 @@ test/fotos/
 .DS_Store
 node_modules/
 .claude/
+.playwright-mcp/
+docs/
