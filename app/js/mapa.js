@@ -1,4 +1,4 @@
-import { candidatos } from './tramo.js'; import { leerRios, empalmar, orientar } from './teselas.js'; import { ZONAS } from './textos.js'; import { abrirRegistro, registros } from './diario.js';
+import { candidatos } from './tramo.js'; import { orientar } from './teselas.js'; import { traer, rios, relieve } from './fuentes.js'; import { ZONAS } from './textos.js'; import { abrirRegistro, registros } from './diario.js';
 const $ = id => document.getElementById(id), I = $('infomapa'); let m, capa, pruebas, yo;
 const esc = s => String(s).replace(/[&<>"]/g, c => `&#${c.charCodeAt(0)};`);
 const QUE = { curva: ['Interior de curva', 'La corriente pierde fuerza por dentro. Busca la barra de grava y empieza por su extremo aguas arriba.'], pendiente: ['Cambio de pendiente', 'El río deja de caer tan fuerte: aquí suelta grava gruesa y minerales pesados.'], confluencia: ['Confluencia', 'Dos corrientes se frenan al juntarse. Muestrea la barra de la unión y compara ambos ríos aguas arriba.'] };
@@ -13,27 +13,6 @@ export function iniciar() {
   $('analizar').onclick = buscar; m.on('click', e => abrirPunto(e.latlng));
 }
 function marcarPruebas() { pruebas.clearLayers(); for (const r of registros()) if (r.pos) L.circleMarker([r.pos.lat, r.pos.lon], { radius: 8, color: '#12312f', fillColor: +r.mg > 0 || +r.colores > 0 ? '#ffc526' : '#fff', fillOpacity: 1 }).addTo(pruebas).bindPopup(`${esc(r.lugar)}<br>${esc(r.mg || 0)} mg, ${esc(r.colores || 0)} colores`); }
-async function traer(u, o = {}, ms = 30000) { const r = await fetch(u, { ...o, signal: AbortSignal.timeout(ms) }); if (!r.ok) throw new Error(r.status); return r; }
-let plantilla;
-async function rios(b) {
-  try {
-    plantilla ||= (await (await traer('https://tiles.openfreemap.org/planet', {}, 15000)).json()).tiles[0];
-    const z = 14, n = 2 ** z, tx = lo => Math.floor((lo + 180) / 360 * n), ty = la => Math.floor((1 - Math.asinh(Math.tan(la * Math.PI / 180)) / Math.PI) / 2 * n), P = [];
-    for (let x = tx(b.getWest()); x <= tx(b.getEast()); x++) for (let y = ty(b.getNorth()); y <= ty(b.getSouth()); y++) P.push(traer(plantilla.replace('{z}', z).replace('{x}', x).replace('{y}', y), {}, 20000).then(r => r.arrayBuffer()).then(a => a.byteLength ? leerRios(a, z, x, y) : []));
-    return empalmar((await Promise.all(P)).flat());
-  } catch (e) {
-    console.warn('teselas', e);
-    const q = `[out:json][timeout:20];way(${b.getSouth()},${b.getWest()},${b.getNorth()},${b.getEast()})[waterway~"^(river|stream)$"];out geom;`;
-    const j = await (await traer('https://overpass-api.de/api/interpreter', { method: 'POST', body: new URLSearchParams({ data: q }) }, 20000)).json();
-    return j.elements.filter(w => w.geometry).map(w => ({ nombre: w.tags?.name, puntos: w.geometry.map(g => [g.lat, g.lon]) }));
-  }
-}
-async function relieve(b) {
-  const z = 13, n = 2 ** z, tx = lo => (lo + 180) / 360 * n, ty = la => { const s = Math.asinh(Math.tan(la * Math.PI / 180)); return (1 - s / Math.PI) / 2 * n; }, T = new Map(), P = [];
-  for (let x = Math.floor(tx(b.getWest())); x <= tx(b.getEast()); x++) for (let y = Math.floor(ty(b.getNorth())); y <= ty(b.getSouth()); y++) P.push((async () => { try { const im = await createImageBitmap(await (await traer(`https://s3.amazonaws.com/elevation-tiles-prod/terrarium/${z}/${x}/${y}.png`)).blob(), { colorSpaceConversion: 'none' }), c = new OffscreenCanvas(256, 256).getContext('2d'); c.drawImage(im, 0, 0); T.set(x + '/' + y, c.getImageData(0, 0, 256, 256).data); } catch { } })());
-  await Promise.all(P);
-  return (la, lo) => { const X = tx(lo), Y = ty(la), d = T.get(Math.floor(X) + '/' + Math.floor(Y)); if (!d) return null; const i = (Math.floor(Y % 1 * 256) * 256 + Math.floor(X % 1 * 256)) * 4; return d[i] * 256 + d[i + 1] + d[i + 2] / 256 - 32768; };
-}
 async function buscar() {
   if (m.getZoom() < 12) { I.innerHTML = '<p>Acércate más al río (hasta ver unos pocos kilómetros) y vuelve a buscar.</p>'; return; }
   const B = $('analizar'), b = m.getBounds(); B.disabled = true; I.innerHTML = '<p>Leyendo ríos y relieve…</p>';
